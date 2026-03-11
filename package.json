@@ -13,7 +13,12 @@
         ],
         "displayName": "Showtime",
         "enableMultiJS": true,
-        "messageKeys": [],
+        "messageKeys": [
+            "ColorHour",
+            "ColorMinute",
+            "ColorRing",
+            "ColorInnerRing"
+        ],
         "projectType": "moddable",
         "resources": {
             "media": []

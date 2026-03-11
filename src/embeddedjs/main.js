@@ -17,11 +17,17 @@ const TRI_Y_H      = Math.round(hw * 0.17);
 const TRI_H_BASE   = Math.round(hw * 0.11);
 const TRI_H_H      = Math.round(hw * 0.13);
 
-const black  = render.makeColor(0,   0,   0  );
-const white  = render.makeColor(255, 255, 255);
-const blue   = render.makeColor(60,  80,  210);
-const red    = render.makeColor(185, 25,  25 );
-const olive  = render.makeColor(175, 185, 30 );
+const black = render.makeColor(0, 0, 0);
+
+function hexToColor(hex) {
+    return render.makeColor((hex >> 16) & 0xFF, (hex >> 8) & 0xFF, hex & 0xFF);
+}
+
+// Mutable colors — updated when config is received
+let colorHour      = hexToColor(0x0055FF);
+let colorMinute    = hexToColor(0xAA0000);
+let colorRing      = hexToColor(0xAAAA00);
+let colorInnerRing = hexToColor(0xFFFFFF);
 
 // Draw a ring (donut) using horizontal scanlines
 function drawRing(color, ocx, ocy, outerR, innerR) {
@@ -99,26 +105,26 @@ function draw(event) {
     // Background
     render.fillRectangle(black, 0, 0, render.width, render.height);
 
-    // Olive yellow outer ring
-    drawRing(olive, cx, cy, YELLOW_R_OUT, YELLOW_R_IN);
+    // Outer ring
+    drawRing(colorRing, cx, cy, YELLOW_R_OUT, YELLOW_R_IN);
 
-    // Fixed triangles on yellow ring at 0° (east/right) and 180° (west/left)
+    // Fixed triangles on outer ring at 0° (east/right) and 180° (west/left)
     const ymr = (YELLOW_R_OUT + YELLOW_R_IN) / 2;
-    drawPointer(olive, cx + ymr, cy, 0,        TRI_Y_BASE, TRI_Y_H);
-    drawPointer(olive, cx - ymr, cy, Math.PI,  TRI_Y_BASE, TRI_Y_H);
+    drawPointer(colorRing, cx + ymr, cy, 0,        TRI_Y_BASE, TRI_Y_H);
+    drawPointer(colorRing, cx - ymr, cy, Math.PI,  TRI_Y_BASE, TRI_Y_H);
 
-    // White inner ring
-    drawRing(white, cx, cy, WHITE_R_OUTER, WHITE_R_INNER);
+    // Inner ring
+    drawRing(colorInnerRing, cx, cy, WHITE_R_OUTER, WHITE_R_INNER);
 
-    // Red dot tracking minutes (orbit between rings)
-    fillCircle(red,
+    // Minute dot
+    fillCircle(colorMinute,
         Math.round(cx + RED_DOT_R * Math.cos(minuteAngle)),
         Math.round(cy + RED_DOT_R * Math.sin(minuteAngle)),
         RED_DOT_SIZE
     );
 
-    // Blue triangle tracking hours (base on white ring outer edge, pointing outward)
-    drawPointer(blue,
+    // Hour triangle (base on inner ring outer edge, pointing outward)
+    drawPointer(colorHour,
         cx + WHITE_R_OUTER * Math.cos(hourAngle),
         cy + WHITE_R_OUTER * Math.sin(hourAngle),
         hourAngle, TRI_H_BASE, TRI_H_H
@@ -126,5 +132,14 @@ function draw(event) {
 
     render.end();
 }
+
+watch.addEventListener("appmessage", function(event) {
+    const p = event.payload;
+    if (p.ColorHour      !== undefined) colorHour      = hexToColor(p.ColorHour);
+    if (p.ColorMinute    !== undefined) colorMinute    = hexToColor(p.ColorMinute);
+    if (p.ColorRing      !== undefined) colorRing      = hexToColor(p.ColorRing);
+    if (p.ColorInnerRing !== undefined) colorInnerRing = hexToColor(p.ColorInnerRing);
+    draw({ date: new Date() });
+});
 
 watch.addEventListener("minutechange", draw);
