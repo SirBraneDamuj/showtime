@@ -1,12 +1,15 @@
 {
-    "author": "MakeAwesomeHappen",
+    "author": "SirBraneDamuj",
     "dependencies": {},
     "keywords": [
         "pebble-app"
     ],
-    "name": "watchface-tutorial",
+    "name": "showtime",
     "pebble": {
-        "displayName": "Tutorial Watchface",
+        "capabilities": [
+            "configurable"
+        ],
+        "displayName": "Showtime",
         "enableMultiJS": true,
         "messageKeys": [],
         "projectType": "moddable",
