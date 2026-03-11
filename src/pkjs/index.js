@@ -8,14 +8,15 @@ var DEFAULTS = {
     ColorInnerRing: 'FFFFFF'
 };
 
-var clay = new Clay(clayConfig, function() {
-    var self = this;
-    self.on(Clay.EVENTS.AFTER_BUILD, function() {
-        self.getItemById('reset-defaults').on('click', function() {
-            self.getItemByMessageKey('ColorHour').set(DEFAULTS.ColorHour);
-            self.getItemByMessageKey('ColorMinute').set(DEFAULTS.ColorMinute);
-            self.getItemByMessageKey('ColorRing').set(DEFAULTS.ColorRing);
-            self.getItemByMessageKey('ColorInnerRing').set(DEFAULTS.ColorInnerRing);
+var clay = new Clay(clayConfig, function(minified) {
+    var config = this;
+    config.on(config.EVENTS.AFTER_BUILD, function() {
+        var defaults = config.meta.userData;
+        config.getItemById('reset-defaults').on('click', function() {
+            config.getItemByMessageKey('ColorHour').set(defaults.ColorHour);
+            config.getItemByMessageKey('ColorMinute').set(defaults.ColorMinute);
+            config.getItemByMessageKey('ColorRing').set(defaults.ColorRing);
+            config.getItemByMessageKey('ColorInnerRing').set(defaults.ColorInnerRing);
         });
     });
-});
+}, { userData: DEFAULTS });
