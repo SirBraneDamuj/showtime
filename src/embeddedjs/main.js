@@ -1,9 +1,30 @@
 import Poco from "commodetto/Poco";
+import Message from "pebble/message";
 
 const render = new Poco(screen);
 const cx = render.width >> 1;
 const cy = render.height >> 1;
 const hw = cx;
+
+const DEFAULT_SETTINGS = {
+    ColorHour:      0x0055FF,
+    ColorMinute:    0xAA0000,
+    ColorRing:      0xAAAA00,
+    ColorInnerRing: 0xFFFFFF
+};
+
+function loadSettings() {
+    const stored = localStorage.getItem("settings");
+    if (stored) {
+        try {
+            return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+        } catch (e) {
+        }
+    }
+    return { ...DEFAULT_SETTINGS };
+}
+
+const settings = loadSettings();
 
 // Ring geometry (proportional to screen)
 const WHITE_R_OUTER = Math.round(hw * 0.44);
@@ -24,10 +45,10 @@ function hexToColor(hex) {
 }
 
 // Mutable colors — updated when config is received
-let colorHour      = hexToColor(0x0055FF);
-let colorMinute    = hexToColor(0xAA0000);
-let colorRing      = hexToColor(0xAAAA00);
-let colorInnerRing = hexToColor(0xFFFFFF);
+let colorHour      = hexToColor(settings.ColorHour);
+let colorMinute    = hexToColor(settings.ColorMinute);
+let colorRing      = hexToColor(settings.ColorRing);
+let colorInnerRing = hexToColor(settings.ColorInnerRing);
 
 // Draw a ring (donut) using horizontal scanlines
 function drawRing(color, ocx, ocy, outerR, innerR) {
@@ -133,13 +154,21 @@ function draw(event) {
     render.end();
 }
 
-watch.addEventListener("appmessage", function(event) {
-    const p = event.payload;
-    if (p.ColorHour      !== undefined) colorHour      = hexToColor(p.ColorHour);
-    if (p.ColorMinute    !== undefined) colorMinute    = hexToColor(p.ColorMinute);
-    if (p.ColorRing      !== undefined) colorRing      = hexToColor(p.ColorRing);
-    if (p.ColorInnerRing !== undefined) colorInnerRing = hexToColor(p.ColorInnerRing);
-    draw({ date: new Date() });
+new Message({
+    keys: ["ColorHour", "ColorMinute", "ColorRing", "ColorInnerRing"],
+    onReadable() {
+        const msg = this.read();
+        const ch = msg.get("ColorHour");
+        const cm = msg.get("ColorMinute");
+        const cr = msg.get("ColorRing");
+        const ci = msg.get("ColorInnerRing");
+        if (ch !== undefined) { settings.ColorHour      = ch; colorHour      = hexToColor(ch); }
+        if (cm !== undefined) { settings.ColorMinute    = cm; colorMinute    = hexToColor(cm); }
+        if (cr !== undefined) { settings.ColorRing      = cr; colorRing      = hexToColor(cr); }
+        if (ci !== undefined) { settings.ColorInnerRing = ci; colorInnerRing = hexToColor(ci); }
+        localStorage.setItem("settings", JSON.stringify(settings));
+        draw({ date: new Date() });
+    }
 });
 
 watch.addEventListener("minutechange", draw);

@@ -1,5 +1,6 @@
 var Clay = require('@rebble/clay');
 var clayConfig = require('./config');
+var moddableProxy = require('@moddable/pebbleproxy');
 
 var DEFAULTS = {
     ColorHour:      '0055FF',
@@ -20,3 +21,6 @@ var clay = new Clay(clayConfig, function(minified) {
         });
     });
 }, { userData: DEFAULTS });
+
+Pebble.addEventListener('ready', moddableProxy.readyReceived);
+Pebble.addEventListener('appmessage', moddableProxy.appMessageReceived);

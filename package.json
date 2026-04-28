@@ -1,6 +1,7 @@
 {
     "author": "SirBraneDamuj",
     "dependencies": {
+        "@moddable/pebbleproxy": "^1.0.0",
         "@rebble/clay": "^1.0.8"
     },
     "keywords": [
